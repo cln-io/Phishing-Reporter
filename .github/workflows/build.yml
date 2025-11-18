@@ -35,7 +35,7 @@ jobs:
       run: nuget restore PhishingReporter.sln
 
     - name: Build solution
-      run: msbuild PhishingReporter\PhishingReporter.csproj /t:Build /p:Configuration=Release /p:Platform="Any CPU" /p:VisualStudioVersion=17.0 /p:PublishUrl="publish\"
+      run: msbuild PhishingReporter\PhishingReporter.csproj /t:Build /p:Configuration=Release /p:Platform=AnyCPU /p:VisualStudioVersion=17.0 /p:PublishUrl="publish\"
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
