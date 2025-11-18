@@ -1,4 +1,4 @@
-.PHONY: build clean run docker-build help
+.PHONY: build clean run download help
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -6,15 +6,13 @@ help: ## Show this help message
 	@echo 'Available targets:'
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-build: ## Build using Docker (local compilation on Mac)
-	@echo "🐳 Building Phishing Reporter with Docker..."
-	docker compose build
-	docker compose run --rm builder
-	@echo "✅ Build complete! Artifacts in ./output/"
+build: download ## Download latest build from GitHub Actions (recommended)
 
-docker-build: build ## Alias for build
+download: ## Download latest build from GitHub Actions
+	@echo "📥 Downloading latest build from GitHub Actions..."
+	@./build-local.sh
 
-run: build ## Build and show output
+run: download ## Download and show artifacts
 	@echo "📦 Build artifacts:"
 	@ls -lah output/
 

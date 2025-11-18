@@ -1,65 +1,37 @@
 # Building Phishing Reporter
 
-This project is a .NET Framework 4.6.1 VSTO (Visual Studio Tools for Office) add-in for Outlook.
+This is a .NET Framework 4.6.1 VSTO (Visual Studio Tools for Office) add-in for Outlook.
 
-## Option 1: Build with Docker on Mac (Recommended) 🐳
+## ⭐ Recommended: Download from GitHub Actions
 
-Build locally using Docker with Mono (works on Mac M1/M2/Intel):
-
-### Quick Start
+The easiest and most reliable way to get compiled builds on Mac:
 
 ```bash
-# Build with Docker
-make build
-
-# Or using docker-compose directly
-docker-compose build
-docker-compose run --rm builder
-```
-
-Artifacts will be in `./output/`.
-
-### Available Make Commands
-
-```bash
-make build      # Build the project with Docker
-make clean      # Clean up build artifacts
-make rebuild    # Clean and rebuild
-make run        # Build and show artifacts
-make shell      # Open shell in build container
-make download   # Download from GitHub Actions instead
-```
-
-## Option 2: Download from GitHub Actions (Fast)
-
-If you just need the compiled DLL without building locally:
-
-```bash
-# Download latest successful build
 ./build-local.sh
 ```
 
-This downloads pre-built artifacts from GitHub Actions to `./output/`.
+This downloads the latest successful build from GitHub Actions to `./output/`.
 
-### Manual download
+**Why this is best:**
+- ✅ Works perfectly every time
+- ✅ No local setup required
+- ✅ Builds use proper Windows/.NET Framework environment
+- ✅ Automatic builds on every push
 
-You can also manually download artifacts from:
-https://github.com/cln-io/Phishing-Reporter/actions/workflows/build.yml
-
-## Option 3: Trigger GitHub Actions Build Manually
+## Option 2: Trigger Manual Build
 
 ```bash
 # Trigger a new build
 gh workflow run build.yml
 
 # Watch the build
-gh run watch
+gh run watch $(gh run list --limit 1 --json databaseId --jq '.[0].databaseId')
 
-# Download artifacts when complete
+# Download when complete
 ./build-local.sh
 ```
 
-## Option 4: Build Directly on Windows (If Available)
+## Option 3: Build on Windows (If Available)
 
 If you have access to a Windows machine:
 
@@ -74,6 +46,10 @@ Or use MSBuild from command line:
 nuget restore PhishingReporter.sln
 msbuild PhishingReporter\PhishingReporter.csproj /t:"ResolveReferences;CoreCompile;_CopyFilesMarkedCopyLocal;_CopyAppConfigFile;CopyFilesToOutputDirectory" /p:Configuration=Release /p:Platform=AnyCPU
 ```
+
+## About Docker/Mono Build
+
+⚠️ **Note:** Docker builds with Mono are **not reliable** for VSTO projects. .NET Framework VSTO projects require Windows-specific APIs that don't work properly with Mono on Linux. The GitHub Actions approach above uses real Windows runners and is the recommended solution.
 
 ## Artifacts
 
@@ -100,3 +76,12 @@ gh auth login
 # Trigger build for current commit
 gh workflow run build.yml --ref $(git rev-parse --abbrev-ref HEAD)
 ```
+
+## GitHub Actions Workflow
+
+The project automatically builds on:
+- Every push to `master` branch
+- Pull requests
+- Manual workflow dispatch
+
+View builds at: https://github.com/cln-io/Phishing-Reporter/actions
