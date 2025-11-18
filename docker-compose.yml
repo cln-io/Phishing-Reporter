@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: windows/amd64
+    volumes:
+      - ./output:/output
+    environment:
+      - CI=true
