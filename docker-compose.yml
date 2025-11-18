@@ -5,8 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    platform: windows/amd64
     volumes:
       - ./output:/output
     environment:
       - CI=true
+    platform: linux/amd64

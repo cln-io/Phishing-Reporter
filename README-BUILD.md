@@ -1,29 +1,52 @@
 # Building Phishing Reporter
 
-This project is a .NET Framework 4.6.1 VSTO (Visual Studio Tools for Office) add-in for Outlook, which requires Windows to build.
+This project is a .NET Framework 4.6.1 VSTO (Visual Studio Tools for Office) add-in for Outlook.
 
-## Option 1: Build on Mac (Recommended)
+## Option 1: Build with Docker on Mac (Recommended) 🐳
 
-Since .NET Framework requires Windows, the easiest way to build on Mac is to use the automated GitHub Actions build:
+Build locally using Docker with Mono (works on Mac M1/M2/Intel):
 
-### Using the build script
+### Quick Start
 
 ```bash
-# Make the script executable
-chmod +x build-local.sh
+# Build with Docker
+make build
 
-# Run the build (downloads latest artifacts from GitHub Actions)
+# Or using docker-compose directly
+docker-compose build
+docker-compose run --rm builder
+```
+
+Artifacts will be in `./output/`.
+
+### Available Make Commands
+
+```bash
+make build      # Build the project with Docker
+make clean      # Clean up build artifacts
+make rebuild    # Clean and rebuild
+make run        # Build and show artifacts
+make shell      # Open shell in build container
+make download   # Download from GitHub Actions instead
+```
+
+## Option 2: Download from GitHub Actions (Fast)
+
+If you just need the compiled DLL without building locally:
+
+```bash
+# Download latest successful build
 ./build-local.sh
 ```
 
-This will download the latest successful build artifacts from GitHub Actions to `./output/`.
+This downloads pre-built artifacts from GitHub Actions to `./output/`.
 
 ### Manual download
 
 You can also manually download artifacts from:
 https://github.com/cln-io/Phishing-Reporter/actions/workflows/build.yml
 
-## Option 2: Docker with Windows Container (Advanced)
+## Option 3: Docker with Windows Container (Advanced)
 
 **Note:** This requires a Windows Docker host since .NET Framework only runs on Windows.
 

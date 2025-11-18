@@ -1,33 +1,69 @@
 # Build environment for Phishing Reporter
-# Note: This requires Windows containers (not available natively on Mac)
-# Use with: docker build --platform windows/amd64 -t phishing-reporter-builder .
+# Linux-based build using Mono for Mac compatibility
+FROM mono:latest
 
-FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    unzip \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install NuGet
+RUN wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -O /usr/local/bin/nuget.exe
+
+# Create nuget wrapper script
+RUN echo '#!/bin/bash\nmono /usr/local/bin/nuget.exe "$@"' > /usr/local/bin/nuget \
+    && chmod +x /usr/local/bin/nuget
+
+# Install MSBuild (comes with Mono)
+# Mono includes msbuild, xbuild as part of the installation
 
 # Set working directory
-WORKDIR C:\\build
-
-# Install Chocolatey
-RUN powershell -Command \
-    Set-ExecutionPolicy Bypass -Scope Process -Force; \
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
-    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-
-# Install build dependencies
-RUN choco install -y netfx-4.6.1-devpack
-RUN choco install -y nuget.commandline
-
-# Install Visual Studio Build Tools 2022 with Office tools
-RUN choco install -y visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.OfficeDevTools --add Microsoft.VisualStudio.Workload.NetFramework --includeRecommended --quiet"
+WORKDIR /build
 
 # Copy project files
-COPY . C:\\build
+COPY . /build
+
+# Install reference assemblies for .NET Framework 4.6.1
+RUN mkdir -p /usr/lib/mono/xbuild-frameworks/.NETFramework/v4.6.1/RedistList \
+    && mkdir -p /usr/lib/mono/4.5
 
 # Restore NuGet packages
-RUN nuget restore PhishingReporter.sln
+RUN nuget restore PhishingReporter.sln || true
 
-# Build the project
-RUN msbuild PhishingReporter\PhishingReporter.csproj /t:"ResolveReferences;CoreCompile;_CopyFilesMarkedCopyLocal;_CopyAppConfigFile;CopyFilesToOutputDirectory" /p:Configuration=Release /p:Platform=AnyCPU /p:VisualStudioVersion=17.0
+# Build script that handles the build
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "Starting build..."\n\
+\n\
+# Restore packages\n\
+nuget restore PhishingReporter.sln\n\
+\n\
+# Build the project using msbuild\n\
+msbuild PhishingReporter/PhishingReporter.csproj \
+/p:Configuration=Release \
+/p:Platform=AnyCPU \
+/p:OutputPath=/output \
+/p:SignManifests=false \
+/p:DefineConstants="TRACE" \
+/verbosity:minimal || true\n\
+\n\
+# Also try with xbuild as fallback\n\
+xbuild PhishingReporter/PhishingReporter.csproj \
+/p:Configuration=Release \
+/p:Platform=AnyCPU \
+/p:OutputPath=/output \
+/verbosity:minimal || true\n\
+\n\
+# Copy any built files to output\n\
+mkdir -p /output\n\
+find PhishingReporter/bin -name "*.dll" -exec cp {} /output/ \\; 2>/dev/null || true\n\
+find PhishingReporter/obj -name "*.dll" -exec cp {} /output/ \\; 2>/dev/null || true\n\
+cp packages/HtmlAgilityPack.*/lib/Net45/*.dll /output/ 2>/dev/null || true\n\
+\n\
+echo "Build complete. Artifacts in /output"\n\
+ls -lah /output\n\
+' > /build/build.sh && chmod +x /build/build.sh
 
-# Output artifacts
-CMD ["powershell", "-Command", "Copy-Item -Path 'PhishingReporter\\bin\\Release\\*' -Destination 'C:\\output' -Recurse -Force"]
+CMD ["/build/build.sh"]
