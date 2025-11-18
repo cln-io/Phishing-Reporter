@@ -241,8 +241,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests Condition="'$(CI)' != 'true'">true</SignManifests>
-    <SignManifests Condition="'$(CI)' == 'true'">false</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>PhishingReporter_TemporaryKey.pfx</ManifestKeyFile>
