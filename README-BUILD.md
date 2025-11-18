@@ -46,29 +46,6 @@ This downloads pre-built artifacts from GitHub Actions to `./output/`.
 You can also manually download artifacts from:
 https://github.com/cln-io/Phishing-Reporter/actions/workflows/build.yml
 
-## Option 3: Docker with Windows Container (Advanced)
-
-**Note:** This requires a Windows Docker host since .NET Framework only runs on Windows.
-
-### Using a Remote Windows Docker Host
-
-If you have access to a Windows machine with Docker:
-
-```bash
-# Set Docker to use remote Windows host
-export DOCKER_HOST=tcp://your-windows-machine:2375
-
-# Build using Docker
-docker-compose build
-docker-compose run builder
-
-# Artifacts will be in ./output/
-```
-
-### Using Docker Desktop with Windows Containers
-
-This is not possible on Mac as Docker Desktop for Mac doesn't support Windows containers.
-
 ## Option 3: Trigger GitHub Actions Build Manually
 
 ```bash
@@ -82,7 +59,7 @@ gh run watch
 ./build-local.sh
 ```
 
-## Option 4: Build on Windows
+## Option 4: Build Directly on Windows (If Available)
 
 If you have access to a Windows machine:
 
